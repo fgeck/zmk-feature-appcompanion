@@ -1,10 +1,19 @@
 config ZMK_LAYER_STATUS_HID
     bool "Enable layer status HID reporting for Keyboard layers app companion"
     default y
-    depends on (!ZMK_SPLIT || (ZMK_SPLIT && ZMK_SPLIT_ROLE_CENTRAL))
+    depends on ZMK_USB
     select USB_DEVICE_STACK
-    select USB_HID_DEVICE
-    # select USB_DEVICE_INITIALIZE_AT_BOOT
+    select USB_DEVICE_HID
     help
-        Enables sending layer state changes via USB HID raw reports
-        compatible with the Keyboard layers app companion.
+        Enables sending layer state changes via USB HID raw reports.
+        Requires CONFIG_USB_HID_DEVICE_COUNT >= 2.
+
+config ZMK_LAYER_STATUS_HID_USAGE_PAGE
+    hex "HID Usage Page"
+    default 0xFF60
+    depends on ZMK_LAYER_STATUS_HID
+
+config ZMK_LAYER_STATUS_HID_USAGE
+    hex "HID Usage"
+    default 0x61
+    depends on ZMK_LAYER_STATUS_HID
