@@ -5,6 +5,8 @@
 #include <zmk/event_manager.h>
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/keymap.h>
+#include <zmk/usb.h>
+#include "layer_status_hid.h"
 
 #define RAW_EPSIZE 32
 #define PAYLOAD_MARK 0x90
@@ -15,10 +17,22 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 static const struct device *hid_dev;
 static bool usb_ready = false;
 
+static K_SEM_DEFINE(hid_sem, 1, 1);
+
+static void in_ready_cb(const struct device *dev) {
+    k_sem_give(&hid_sem);
+}
+
+static const struct hid_ops ops = {
+    .int_in_ready = in_ready_cb,
+};
+
 static void send_layer_report(uint8_t layer) {
   if (hid_dev == NULL || !usb_ready) {
     return;
   }
+
+  k_sem_take(&hid_sem, K_MSEC(30));
 
   uint8_t report[RAW_EPSIZE];
   memset(report, 0x00, RAW_EPSIZE);
@@ -28,15 +42,21 @@ static void send_layer_report(uint8_t layer) {
   int ret = hid_int_ep_write(hid_dev, report, RAW_EPSIZE, NULL);
   if (ret < 0 && ret != -EAGAIN) {
     LOG_ERR("Failed to send layer report: %d", ret);
+    k_sem_give(&hid_sem);
   }
 }
 
 static int layer_status_hid_init(const struct device *dev) {
-  hid_dev = device_get_binding("HID_0");
+  hid_dev = device_get_binding("HID_1");
   if (hid_dev == NULL) {
-    LOG_WRN("USB HID device not available (may be using Bluetooth)");
+    LOG_WRN("HID_1 device not available");
     return 0;
   }
+
+  usb_hid_register_device(hid_dev, layer_status_hid_report_desc,
+                          sizeof(layer_status_hid_report_desc), &ops);
+
+  usb_hid_init(hid_dev);
 
   k_sleep(K_MSEC(500));
   usb_ready = true;
