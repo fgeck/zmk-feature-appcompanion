@@ -3,7 +3,7 @@
 A ZMK module that reports layer status via standard HID reports(Usb/Bluetooth) and USB HID raw, enabling the [
 Keyboard Layers App Companion](https://github.com/maatthc/keyboard_layers_app_companion) to display the current active layer.
 
-In the case of slip keyboards, this should be defined only in the side defined as `Role Central`
+In the case of split keyboards, this should be defined only in the side defined as `Role Central`
 
 Both can be enabled simultaneously if desired.
 
