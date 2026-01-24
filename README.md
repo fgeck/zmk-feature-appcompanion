@@ -7,6 +7,8 @@ In the case of split keyboards, this should be defined only in the side defined 
 
 Both can be enabled simultaneously if desired.
 
+This [repo](https://github.com/maatthc/zmk-crosses) includes all the required changes for both approaches and can be used as a reference.
+
 ## Installation
 
 Add to your `config/west.yml`:
